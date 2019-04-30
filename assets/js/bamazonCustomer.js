@@ -1,17 +1,74 @@
-// 5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+var mysql = require("mysql");
+var chalk = require("chalk")
+var inquirer = require("inquirer");
 
-// 6. The app should then prompt users with two messages.
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: "root",
+  password: "",
+  database: "bamazonDB"
+});
 
-//    * The first should ask them the ID of the product they would like to buy.
-//    * The second message should ask how many units of the product they would like to buy.
+connection.connect(function(err) {
+    if (err) throw err;
+    
+    productOverview();
+  });
 
-// 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+// Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+function productOverview() {
+    console.log("Selecting all products...\n");
+    connection.query("SELECT * FROM products", 
+    function(err, res) {
+      if (err) throw err;
+      console.log(res);
+      connection.end();
+    });
+}
 
-//    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
+//The first should ask them the ID of the product they would like to buy.
+function idPrompt() {
+    inquirer
+      .prompt({
+        name: "itemID",
+        type: "list",
+        message: "Which items would you like to buy (item ID)?",
+        choices: ["1", "2", "3", "Show me the options again, please"]
+      })
+      .then(function(answer) {
+        // based on their answer, either call the bid or the post functions
+        if (answer.postOrBid === "Show me the options again, please") {
+          productOverview();
+        }
+        else {
+          quantityPrompt(answer.itemID);
+        }
+      });
+  }
 
-// 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
-//    * This means updating the SQL database to reflect the remaining quantity.
-//    * Once the update goes through, show the customer the total cost of their purchase.
+//The second message should ask how many units of the product they would like to buy.
+function quantityPrompt(itemID) {
+    inquirer
+      .prompt({
+        name: "itemQuantity",
+        type: "list",
+        message: "How many of this item would you like to purchase?",
+        choices: [""]
+      })
+      .then(function(answer) {
+        // based on their answer, either call the bid or the post functions
+        if (answer.itemQuantity === "0") {
+          productOverview();
+        }
+        else {
+            //Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+            //If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
+            //However, if your store does have enough of the product, you should fulfill the customer's order & update SQL database to refelect the remaining quantity
+            //Once the order goes through, show the customer the total cost of their purchase
+        }
+      });
+  }
 
 
 //Challenge#3
