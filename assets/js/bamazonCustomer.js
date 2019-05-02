@@ -12,18 +12,33 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
-    
     productOverview();
   });
 
 // Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 function productOverview() {
-    console.log("Selecting all products...\n");
-    connection.query("SELECT * FROM products", 
-    function(err, res) {
-      if (err) throw err;
-      console.log(res);
-      connection.end();
+    inquirer
+    .prompt({
+      name: "welcomePrompt",
+      type: "list",
+      message: `
+        ${chalk.cyan.bold("WELCOME TO BAMAZON!")}
+        ${chalk.reset.italic.magenta("A CLI Outdoor Gear & Apparel shopping app!")}
+          
+        ${chalk.cyan.green("Would you like to see our list of products?")}
+        `,
+      choices: ["YES PLEASE!", "No thank you!"]
+    })
+    .then(function(answer) {
+      console.log(answer);
+      if (answer.welcomePrompt === "YES PLEASE!") {
+        listItems();
+      }
+      else {
+        console.log(`${chalk.cyan("That's okay, come see us again when you want to shop for some awesome outdoor gear and apparel!")}`)
+        connection.end();
+      }
+
     });
 }
 
@@ -52,9 +67,14 @@ function quantityPrompt(itemID) {
     inquirer
       .prompt({
         name: "itemQuantity",
-        type: "list",
+        type: "number",
         message: "How many of this item would you like to purchase?",
-        choices: [""]
+        validate: function(value) {
+          if (isNaN(value) === false) {
+            return true;
+          }
+          return false;
+        }
       })
       .then(function(answer) {
         // based on their answer, either call the bid or the post functions
@@ -70,6 +90,20 @@ function quantityPrompt(itemID) {
       });
   }
 
+function listItems() {
+  var query = "SELECT product_name, price FROM products WHERE stock_quantity > 0";
+  connection.query(query, function(err, res) {
+    console.log("Calculating....")
+  for (var i = 0; i < res.length; i++) {
+    console.log(
+      " Product: " +
+        res[i].product_name +
+        "Price: " +
+        res[i].price
+    );
+  }
+});
+}
 
 //Challenge#3
 // -- 2. Modify the products table so that there's a product_sales column, and modify your `bamazonCustomer.js` app so that when a customer purchases anything from the store, the price of the product multiplied by the quantity purchased is added to the product's product_sales column.
