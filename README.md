@@ -1,4 +1,4 @@
-![bamazon](readMe/bamazon.png)
+![bamazon](assets/readMe/bamazon.png)
 
 Bamazon is a shopping prototype CLI app that uses a SQL database to track orders, update inventories, and determines trending products
 
@@ -20,17 +20,17 @@ Make sure you save and require the MySQL and Inquirer npm packages in your homew
 ## How it works
 
 When you enter BAMAZON, the app will ask you if you want to view the inventory. If you select yet, it will show you a list of items in stock:
-![List](readMe/list.png)
+![List](https://media.giphy.com/media/MX3qJAJr36sT4aDNJ4/giphy.gif)
 
 If you want to purchase more items than there are in stock (for instance, 11 silk shirts), the app will let you know that there is insufficient inventory for your purchase.
-![Silk](readMe/silk.png)
+![Silk](assets/readMe/silk.png)
 
-![No Silk](readMe/nosilk.png)
+![No Silk](assets/readMe/nosilk.png)
 
 It will then ask you if you want to buy something else! If you select an item and an amount that is in stock, BAMAZON will calculate a total price for you and update the inventory on the SQL database!
-![ATC](readMe/atc.png)
+![ATC](assets/readMe/atc.png)
 
-![Buy ATC](readMe/yesatc.png)
+![Buy ATC](assets/readMe/yesatc.png)
 
 See the app in action on youTube!
 - - -
