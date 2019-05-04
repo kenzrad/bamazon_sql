@@ -19,19 +19,21 @@ Make sure you save and require the MySQL and Inquirer npm packages in your homew
 
 ## How it works
 
-When you enter BAMAZON, the app will ask you if you want to view the inventory. If you select yet, it will show you a list of items in stock:
+When you enter BAMAZON, the app will ask you if you want to view the inventory.
+
+If you say "yes", BAMAZON will print the inventory for you!
+
 ![List](https://media.giphy.com/media/MX3qJAJr36sT4aDNJ4/giphy.gif)
 
-If you want to purchase more items than there are in stock (for instance, 11 silk shirts), the app will let you know that there is insufficient inventory for your purchase.
-![Silk](assets/readMe/silk.png)
 
-![No Silk](assets/readMe/nosilk.png)
+If you want to purchase more items than there are in stock (for instance, 11 silk shirts), the app will let you know that there is insufficient inventory for your purchase.
+
+![Silk](https://media.giphy.com/media/RKK7X7ovy0MkefSMdB/giphy.gif)
 
 It will then ask you if you want to buy something else! If you select an item and an amount that is in stock, BAMAZON will calculate a total price for you and update the inventory on the SQL database!
-![ATC](assets/readMe/atc.png)
 
-![Buy ATC](assets/readMe/yesatc.png)
+![ATC](https://media.giphy.com/media/7JjsXL7NK5DdMMvIBn/giphy.gif)
 
-See the app in action on youTube!
+
 - - -
 
