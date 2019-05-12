@@ -18,7 +18,6 @@ connection.connect(function(err) {
 });
 
 
-
 function managerOptions() {
     console.log("");
     console.log("");
@@ -68,13 +67,6 @@ function managerOptions() {
         }
     });
 }
-
-
-//   * If a manager selects `View Low Inventory`, then it should list all items with an inventory count lower than five.
-
-//   * If a manager selects `Add to Inventory`, your app should display a prompt that will let the manager "add more" of any item currently in the store.
-
-//   * If a manager selects `Add New Product`, it should allow the manager to add a completely new product to the store.
 
 // Running this application will display the ids, names, department, and prices of products for sale
 function viewProducts() {
@@ -130,13 +122,19 @@ function viewLowInventory() {
     
     var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE stock_quantity < 5";
     connection.query(query, function(err, res) {
-        for (var i = 0; i < res.length; i++) {
-            console.log(`
-                Product ID:  ${chalk.yellow(res[i].item_id)}
-                Item:        ${chalk.cyan(res[i].product_name)}
-                Quantity:    ${chalk.bold.red(res[i].stock_quantity)}
-                `
-            );
+        if (err) throw err;
+        if (res.length < 1) {
+            console.log(`${chalk.bold.green("There are no low inventory alerts!")}`);
+        }
+        else {
+            for (var i = 0; i < res.length; i++) {
+                console.log(`
+                    Product ID:  ${chalk.yellow(res[i].item_id)}
+                    Item:        ${chalk.cyan(res[i].product_name)}
+                    Quantity:    ${chalk.bold.red(res[i].stock_quantity)}
+                    `
+                );
+            }
         }
     //takes you to inquirer to select what to do next
     console.log("");
@@ -189,14 +187,15 @@ function manageInventory() {
     }
   ])
   .then(function(answer) {
+    var restockQuantity = answer.amount;
     console.log("");
     console.log("");
-    if (answer.itemQuantity === "0") {
+    if (restockQuantity === "0") {
         returnToManager();
     }
     else {
         //check inventory
-        var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
+        var query = "SELECT item_id, product_name, stock_quantity FROM products WHERE ?";
         connection.query(query,{ item_id: answer.productID }, function(err, res) {
             if (err) {
                 console.log(`${chalk.red("There was an error, are you sure that's a valid product? Please try again")}`);
@@ -205,18 +204,29 @@ function manageInventory() {
             }
             //fulfill update inventory
             var productID = answer.productID;
-            var newQuantity = parseInt(res[0].stock_quantity + answer.amount);
-            updateStock(productID, newQuantity, answer.amount);
-            console.log(`${chalk.magenta("Inventory updated for Product ID: ")}${chalk.yellow(productID)}${chalk.magneta("!")}`);
-
+            var stockQuantity = res[0].stock_quantity
+            var newQuantity = parseInt(stockQuantity + restockQuantity);
+            updateStock(productID, newQuantity, restockQuantity);
             });
         }
         console.log("");
         console.log(chalk.blue("---------------------------------------------------------"));
-        returnToManager();
     });
     
 };
+
+function updateStock(id, newQuantity, quantityAdded) {
+    var query = "UPDATE products SET ? WHERE ?";
+    connection.query(query,[{ stock_quantity: newQuantity }, { item_id: id }],function(error) {
+        if (error) throw error;
+        console.log(`
+            ${chalk.reset.italic.magenta("Adding ")}${chalk.reset.bold.cyan(quantityAdded)}${chalk.reset.italic.magenta(" additional items to the BAMAZON inventory")}
+
+            ${chalk.reset.bold.magenta("New Inventory: ")}${chalk.reset.bold.cyan(newQuantity)}
+        `);
+        returnToManager();
+    });
+}
 
 // Running will allow the user to add new items
 function manageProductList() {
@@ -237,7 +247,7 @@ function manageProductList() {
     inquirer
     .prompt([
         {
-            name: "newItem",
+            name: "newProduct",
             type: "prompt",
             message: `${chalk.green("What would you like to add?")}`,
         },
@@ -303,7 +313,7 @@ function confirmNewItem(product, department, price, stock) {
     .then(function(answer) {
         switch(answer.confirmItem) {
             case ("yes"):
-            addToInventory(product, department, price, stock);
+            addNewItem(product, department, price, stock);
             break;
 
             case ("no"):
@@ -313,8 +323,8 @@ function confirmNewItem(product, department, price, stock) {
     });
 }
 
-function addToInventory(product, department, price, stock) {
-    console.log(`${chalk.italics.magenta("Adding this product to the BAMAZON inventory...")}`);
+function addNewItem(product, department, price, stock) {
+    console.log(`${chalk.italic.magenta("Adding this product to the BAMAZON inventory...")}`);
     var query = "INSERT INTO products SET ?";
     connection.query(query,
         {
@@ -324,7 +334,8 @@ function addToInventory(product, department, price, stock) {
             stock_quantity: stock
         },
         function(err, res) {
-            if (err) throw err        
+            if (err) throw err   
+            console.log("");     
             console.log(res.affectedRows + " product(s) inserted!\n");
             console.log("");
             console.log(chalk.blue("---------------------------------------------------------"));
@@ -357,6 +368,7 @@ function returnToManager() {
         }
     });
 }
+
 function goodbye() {
     console.log("");
     console.log(chalk.blue("--------------------------------------------------------"));
