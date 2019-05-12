@@ -104,9 +104,12 @@ function viewProducts() {
                 `
             );
         }
+        console.log("");
+        console.log(chalk.blue("---------------------------------------------------------"));
+        returnToManager();
     });
     //takes you to inquirer to select what to do next
-    managerOptions();
+    
 };
 
 // Running will display all products that have an inventory < 5
@@ -135,11 +138,14 @@ function viewLowInventory() {
                 `
             );
         }
-    });
     //takes you to inquirer to select what to do next
-    managerOptions();
+    console.log("");
+    console.log(chalk.blue("---------------------------------------------------------"));
+    returnToManager();
+    });
 }
 
+// Running will allow the user to add stock to any product
 function manageInventory() {
     console.log("");
     console.log("");
@@ -165,19 +171,19 @@ function manageInventory() {
         if (isNaN(value) === false) {
           return true;
         }
-        console.log(`${chalk.red("That's not a number!!")}`);
+        console.log(`${chalk.red("Please try again, that is not a number")}`);
         return false;
       }
     },
     {
       name: "amount",
       type: "number",
-      message: `${chalk.green("How many do you want to purchase?")}`,
+      message: `${chalk.green("How many items do you want to add? Press '0' to return to home without updating inventory.")}`,
       validate: function(value) {
         if (isNaN(value) === false) {
           return true;
         }
-        console.log(`${chalk.red("That's not a number!!")}`);
+        console.log(`${chalk.red("Please try again, that is not a number")}`);
         return false;
       }
     }
@@ -186,61 +192,179 @@ function manageInventory() {
     console.log("");
     console.log("");
     if (answer.itemQuantity === "0") {
-      productOverview();
+        returnToManager();
     }
     else {
-      //check inventory
-      var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
-      connection.query(query,{ item_id: answer.productID }, function(err, res) {
-        //fulfill order and run stock update function
-        if (res[0].stock_quantity > answer.amount) {
-          var productID = answer.productID;
-          var newQuantity = parseInt(res[0].stock_quantity - answer.amount);
-          updateStock(productID, newQuantity, answer.amount);
+        //check inventory
+        var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
+        connection.query(query,{ item_id: answer.productID }, function(err, res) {
+            if (err) {
+                console.log(`${chalk.red("There was an error, are you sure that's a valid product? Please try again")}`);
+                returnToManager();
+                throw err
+            }
+            //fulfill update inventory
+            var productID = answer.productID;
+            var newQuantity = parseInt(res[0].stock_quantity + answer.amount);
+            updateStock(productID, newQuantity, answer.amount);
+            console.log(`${chalk.magenta("Inventory updated for Product ID: ")}${chalk.yellow(productID)}${chalk.magneta("!")}`);
+
+            });
         }
-        //insuffucient inventory
-        else {
-          console.log(`
-            ${chalk.red("OH NO!!!!")}
-             
-            ${chalk.magenta("We don't have enough in stock of that items.")}
-            
-            ${chalk.green("Please try again...")}
-          `);
-          purchasePrompt();
-        }
-      });
-    }
-  });
+        console.log("");
+        console.log(chalk.blue("---------------------------------------------------------"));
+        returnToManager();
+    });
+    
 };
 
-function updateStock(id, newQuantity, quantity) {
-  var query = "UPDATE products SET ? WHERE ?";
-  connection.query(query,[{ stock_quantity: newQuantity }, { item_id: id }],function(error) {
-    if (error) throw err;
-    calculatePrice(id, quantity);
-  });
-}
-
-function calculatePrice(id, quantity) {
-  var query = "SELECT product_name, price FROM products WHERE ?";
-  connection.query(query, { item_id: id }, function(err, res) {
-    var totalPrice = parseInt(res[0].price * quantity);
+// Running will allow the user to add new items
+function manageProductList() {
+    console.log("");
+    console.log("");
+    console.log(chalk.blue("--------------------------------------------------------"));
+    console.log("");
     console.log(`
-      ${chalk.cyan("You total comes to")}${chalk.bold.yellow(" $")}${chalk.bold.yellow(totalPrice.toFixed(2))}
-        
-      ${chalk.cyan("You're order will be placed once you figure out how to pay me!")}
-  
-      ${chalk.green("Thank you for trying to shop at BAMAZON!")}
+        ${chalk.cyan.bold("BAMAZON MANAGER")}
+
+        ${chalk.reset.italic.magenta("Product List Manager")}
     `);
-  });
-  connection.end();
+    console.log("");
+    console.log(chalk.blue("---------------------------------------------------------"));
+    console.log("");
+    console.log("");
+    
+    inquirer
+    .prompt([
+        {
+            name: "newItem",
+            type: "prompt",
+            message: `${chalk.green("What would you like to add?")}`,
+        },
+        {
+            name: "itemDepartment",
+            type: "list",
+            message: `${chalk.green("Select a department for the new item:")}`,
+            choices: ["Apparel", "Fly Fishing", "Climbing"]
+        },
+        {
+            name: "initialInventory",
+            type: "number",
+            message: `${chalk.green("What is the initial inventory for this item?")}`,
+            validate: function(value) {
+                if (isNaN(value) === false) {
+                return true;
+                }
+                console.log(`${chalk.red("Please try again, that is not a number")}`);
+                return false;
+            }
+        },
+        {
+            name: "itemPrice",
+            type: "number",
+            message: `${chalk.green("What is the price?")}`,
+            validate: function(value) {
+                if (isNaN(value) === false) {
+                return true;
+                }
+                console.log(`${chalk.red("Please try again, that is not a number")}`);
+                return false;
+            }
+        }
+    ])
+    .then(function(answer) {
+        var newProduct = answer.newProduct;
+        var newItemDepartment = answer.itemDepartment;
+        var newItemPrice = answer.itemPrice;
+        var newItemStock = answer.initialInventory;
+        console.log(`${chalk.magenta("Your New Product:")}
+            Item:        ${chalk.cyan(newProduct )}
+            Department:  ${chalk.cyan(newItemDepartment)}
+            Price:       ${chalk.cyan("$")}${chalk.cyan(newItemPrice)}
+            Quantity:    ${chalk.cyan(newItemStock)}
+            `
+        );
+        confirmNewItem(newProduct, newItemDepartment, newItemPrice, newItemStock);
+    });
 }
 
+function confirmNewItem(product, department, price, stock) {
+    inquirer
+    .prompt([
+        {
+            name: "confirmItem",
+            type: "list",
+            message: `${chalk.cyan.green("Do you want to add this item to BAMAZON?")}
+        
+            `,
+            choices: ["yes", "no"]
+        }]
+    )
+    .then(function(answer) {
+        switch(answer.confirmItem) {
+            case ("yes"):
+            addToInventory(product, department, price, stock);
+            break;
 
+            case ("no"):
+            returnToManager();
+            break;
+        }
+    });
+}
 
-/////I'm going to do this SUNDAY!!!!!!!!!!!!!////////////
-//Challenge#3
-// -- 2. Modify the products table so that there's a product_sales column, and modify your `bamazonCustomer.js` app so that when a customer purchases anything from the store, the price of the product multiplied by the quantity purchased is added to the product's product_sales column.
+function addToInventory(product, department, price, stock) {
+    console.log(`${chalk.italics.magenta("Adding this product to the BAMAZON inventory...")}`);
+    var query = "INSERT INTO products SET ?";
+    connection.query(query,
+        {
+            product_name: product, 
+            department_name: department, 
+            price: price, 
+            stock_quantity: stock
+        },
+        function(err, res) {
+            if (err) throw err        
+            console.log(res.affectedRows + " product(s) inserted!\n");
+            console.log("");
+            console.log(chalk.blue("---------------------------------------------------------"));
+            returnToManager();
+        }
+    );
+}
 
-// --    * Make sure your app still updates the inventory listed in the `products` column.
+function returnToManager() {
+    inquirer
+    .prompt([
+        {
+            name: "confirmReturn",
+            type: "list",
+            message: `${chalk.cyan.green("Return to BAMAZON manager options?")}
+        
+            `,
+            choices: ["yes", "no"]
+        }]
+    )
+    .then(function(answer) {
+        switch(answer.confirmReturn) {
+            case ("yes"):
+            managerOptions();
+            break;
+
+            case ("no"):
+            goodbye();
+            break;
+        }
+    });
+}
+function goodbye() {
+    console.log("");
+    console.log(chalk.blue("--------------------------------------------------------"));
+    console.log(`
+        ${chalk.magenta("Goodbye!")}
+    
+    `);
+    console.log(chalk.blue("--------------------------------------------------------"));
+    console.log("");
+    connection.end();
+}
