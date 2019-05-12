@@ -42,27 +42,27 @@ When managers enter the app, they are given several manager options:
 
 * `View Products for Sale` is similar to the customer view, except it will print all items whether they are in stock or not:
 
-    ![listAll]https://media.giphy.com/media/X6SjKGSJjCzggdV9L7/giphy.gif
+    ![listAll](https://media.giphy.com/media/X6SjKGSJjCzggdV9L7/giphy.gif)
 
 * `View Low Inventory Products` will show all products that have less than 5 items in stock:
 
-    ![lowIventory]https://media.giphy.com/media/g0vZyBVcpM6VnVztii/giphy.gif
+    ![lowIventory](https://media.giphy.com/media/g0vZyBVcpM6VnVztii/giphy.gif)
 
     If no items are low inventory, a special message appears:
 
-    ![inStock]https://media.giphy.com/media/ZNBlwfcLBhUniKBnqw/giphy.gif
+    ![inStock](https://media.giphy.com/media/ZNBlwfcLBhUniKBnqw/giphy.gif)
 
 * `Manage Product Inventory` will allow you to update the inventory for any item. 
 
-    ![manageInventory]https://media.giphy.com/media/1APbYAqil8EOqAGR0E/giphy.gif
+    ![manageInventory](https://media.giphy.com/media/1APbYAqil8EOqAGR0E/giphy.gif)
 
 * `Manage Product List` allows the user to add new products to the inventory. In the manager view, you cannot add items to departments that don't exist.
 
-    ![manageProduct]https://media.giphy.com/media/19EJ92rUP0LQZ8dBv2/giphy.gif
+    ![manageProduct](https://media.giphy.com/media/19EJ92rUP0LQZ8dBv2/giphy.gif)
 
 * `Mischieve Managed` closes the connection to the database and ends the session. The user has the option to exit at several stages during the session. 
 
-    ![goodBye]https://media.giphy.com/media/RkLvwuwXTdmmYnzwdO/giphy.gif
+    ![goodBye](https://media.giphy.com/media/RkLvwuwXTdmmYnzwdO/giphy.gif)
 
 
 
